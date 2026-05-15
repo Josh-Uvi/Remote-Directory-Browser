@@ -1,0 +1,17 @@
+*.exe
+*.dll
+*.so
+*.dylib
+teleport-browser
+server.crt
+server.key
+coverage.out
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.env
+.env.local
+docs
