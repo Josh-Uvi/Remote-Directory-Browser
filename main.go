@@ -71,9 +71,9 @@ var sessionMgr = &SessionManager{
 }
 
 const (
-	sessionDuration = 1 * time.Hour
+	sessionDuration   = 1 * time.Hour
 	sessionCookieName = "session"
-	allowedBaseDir = ""  // Will be set to home directory at startup
+	allowedBaseDir    = "" // Will be set to home directory at startup
 )
 
 // generateToken creates a cryptographically random token
@@ -416,7 +416,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	// Remove /static/ prefix
 	filePath := strings.TrimPrefix(path, "/static/")
 	filePath = filepath.Clean(filepath.Join("static", filePath))
-	
+
 	// Ensure file is within static directory
 	staticDir, _ := filepath.Abs("./static")
 	absPath, _ := filepath.Abs(filePath)

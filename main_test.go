@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 // TestSessionTokenGeneration tests that tokens are unique and properly formatted
@@ -395,5 +397,139 @@ func TestNestedFilesPath(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("Expected status 200 for nested path, got %d", w.Code)
+	}
+}
+
+// TestLogoutIdempotent tests that logout can be called multiple times safely
+func TestLogoutIdempotent(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/logout", handleLogout)
+
+	// Logout without session (should succeed)
+	req := httptest.NewRequest("POST", "/api/logout", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Expected status 200 on logout without session, got %d", w.Code)
+	}
+
+	var resp APIResponse
+	json.NewDecoder(w.Body).Decode(&resp)
+
+	if !resp.Success {
+		t.Fatalf("Expected successful logout even without session")
+	}
+}
+
+// TestSessionExpiry tests that expired sessions are rejected
+func TestSessionExpiry(t *testing.T) {
+	sm := &SessionManager{sessions: make(map[string]SessionData)}
+
+	// Create session with past expiry
+	token, _ := generateToken()
+	sm.mu.Lock()
+	sm.sessions[token] = SessionData{
+		Username:  "testuser",
+		CreatedAt: time.Now().Add(-2 * time.Hour),
+		ExpiresAt: time.Now().Add(-1 * time.Hour), // Expired 1 hour ago
+	}
+	sm.mu.Unlock()
+
+	// Try to validate expired session
+	_, err := sm.ValidateSession(token)
+	if err == nil {
+		t.Fatalf("Expected error for expired session")
+	}
+}
+
+// TestCleanupExpiredSessions tests that cleanup removes expired sessions
+func TestCleanupExpiredSessions(t *testing.T) {
+	sm := &SessionManager{sessions: make(map[string]SessionData)}
+
+	// Create valid session
+	validToken, _ := generateToken()
+	sm.mu.Lock()
+	sm.sessions[validToken] = SessionData{
+		Username:  "validuser",
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+
+	// Create expired session
+	expiredToken, _ := generateToken()
+	sm.sessions[expiredToken] = SessionData{
+		Username:  "expireduser",
+		CreatedAt: time.Now().Add(-2 * time.Hour),
+		ExpiresAt: time.Now().Add(-1 * time.Hour),
+	}
+	sm.mu.Unlock()
+
+	// Run cleanup
+	sm.CleanupExpiredSessions()
+
+	// Valid session should still exist
+	_, err := sm.ValidateSession(validToken)
+	if err != nil {
+		t.Fatalf("Valid session should not be removed by cleanup")
+	}
+
+	// Expired session should be removed
+	_, err = sm.ValidateSession(expiredToken)
+	if err == nil {
+		t.Fatalf("Expired session should be removed by cleanup")
+	}
+}
+
+// TestFilesPageWithQueryParams tests that query parameters are preserved
+func TestFilesPageWithQueryParams(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/login", handleLogin)
+	mux.HandleFunc("/files", handlePages)
+
+	// Login first
+	loginBody := LoginRequest{
+		Username: "admin",
+		Password: "admin123",
+	}
+	bodyBytes, _ := json.Marshal(loginBody)
+	loginReq := httptest.NewRequest("POST", "/api/login", bytes.NewReader(bodyBytes))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	mux.ServeHTTP(loginW, loginReq)
+
+	sessionCookie := loginW.Result().Cookies()[0]
+
+	// Access /files with query parameters
+	req := httptest.NewRequest("GET", "/files?filter=test&sort=size-desc", nil)
+	req.AddCookie(sessionCookie)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Expected status 200 for /files with query params, got %d", w.Code)
+	}
+
+	// Verify HTML is returned (files.html)
+	body := w.Body.String()
+	if !strings.Contains(body, "Remote Directory Browser") {
+		t.Fatalf("Expected files.html to be served")
+	}
+}
+
+// TestLogoutMethodValidation tests that only POST is allowed for logout
+func TestLogoutMethodValidation(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/logout", handleLogout)
+
+	methods := []string{"GET", "PUT", "DELETE", "PATCH"}
+	for _, method := range methods {
+		req := httptest.NewRequest(method, "/api/logout", nil)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusMethodNotAllowed {
+			t.Fatalf("Expected status 405 for %s method, got %d", method, w.Code)
+		}
 	}
 }

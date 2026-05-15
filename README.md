@@ -2,6 +2,8 @@
 
 A secure web application for browsing remote directory contents with strong authentication, TLS encryption, and client-side filtering/sorting.
 
+**Status:** ✅ All 4 user stories complete! See [COMPLETE_IMPLEMENTATION.md](COMPLETE_IMPLEMENTATION.md) for details.
+
 ## Quick Start
 
 ### Prerequisites
@@ -65,6 +67,28 @@ go build -o teleport-browser
 - [x] Page refresh preserves state via URL
 - [x] Directory table reloads with new contents on navigation
 
+### Third User Story: Filter and Sort Contents ✓
+
+- [x] Real-time filter input with substring matching (case-insensitive)
+- [x] Filter updates table instantly without server requests
+- [x] Sort dropdown with multiple options:
+  - Name (A-Z, Z-A)
+  - Type (directories first)
+  - Size (ascending/descending)
+- [x] Sort updates table instantly without server requests
+- [x] Query parameters preserve filter/sort state (e.g., `?filter=config&sort=size-desc`)
+- [x] Page refresh preserves filter and sort state
+
+### Fourth User Story: Session Timeout and Logout ✓
+
+- [x] Logout button in top-right corner
+- [x] POST /api/logout destroys session server-side
+- [x] Session cookie cleared on logout
+- [x] Redirect to /login after logout
+- [x] Direct navigation to /files without session redirects to /login
+- [x] Session expiry after 1 hour of inactivity
+- [x] Automatic cleanup of expired sessions
+
 ### Security Features
 
 - **TLS Encryption**: All traffic over HTTPS with minimum TLS 1.2
@@ -106,15 +130,20 @@ Tests include:
 - Session token generation and uniqueness
 - Session creation and validation
 - Session destruction
+- Session expiry handling
+- Expired session cleanup
 - Login with valid/invalid credentials
 - Empty credentials handling
 - Malformed JSON handling
 - Logout functionality
+- Logout idempotency
+- Logout method validation
 - Security headers presence
 - HTTP method validation
 - Directory listing with authentication
 - Unauthenticated directory access rejection
 - Files page authentication requirement
+- Files page with query parameters (filter/sort state)
 - Nested directory path handling
 
 ### Format Code
@@ -266,7 +295,10 @@ For production use:
 - [x] Invalid login with wrong password
 - [x] Empty credentials rejection
 - [x] Session creation and validation
+- [x] Session expiry after timeout
+- [x] Expired session cleanup
 - [x] Logout destroys session
+- [x] Logout is idempotent
 - [x] Unauthenticated requests rejected (401)
 - [x] Security headers present on all responses
 - [x] HTTPS enforcement
@@ -277,13 +309,20 @@ For production use:
 - [x] URL updates on directory change
 - [x] Page refresh preserves directory state
 - [x] Nested paths accessible (e.g., /files/Documents/Projects)
+- [x] Filter functionality works (real-time, case-insensitive)
+- [x] Sort functionality works (multiple sort options)
+- [x] Filter/sort state preserved in URL query parameters
+- [x] Filter/sort state restored on page refresh
+- [x] Logout button redirects to login
+- [x] Direct access to /files without session redirects to login
 
 ## Future Enhancements
 
-See [design.md](design.md) for:
-- Phase 2: Frontend directory browser with filtering/sorting
-- Phase 3: Security hardening
-- Phase 4: Testing & polish
+All 4 user stories from the design document are now complete! See [COMPLETE_IMPLEMENTATION.md](COMPLETE_IMPLEMENTATION.md) for full details.
+
+For future phases, see [design.md](docs/design.md):
+- Phase 3: Security hardening (rate limiting, audit logging)
+- Phase 4: Testing & polish (E2E tests, performance optimization)
 
 ## License
 
