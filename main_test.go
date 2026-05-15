@@ -292,3 +292,108 @@ func BenchmarkSessionValidation(b *testing.B) {
 		sm.ValidateSession(token)
 	}
 }
+
+// TestDirectoryListing tests the /api/list endpoint
+func TestDirectoryListing(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/login", handleLogin)
+	mux.HandleFunc("/api/list", handleListDir)
+
+	// Login first
+	loginBody := LoginRequest{
+		Username: "admin",
+		Password: "admin123",
+	}
+	bodyBytes, _ := json.Marshal(loginBody)
+	loginReq := httptest.NewRequest("POST", "/api/login", bytes.NewReader(bodyBytes))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	mux.ServeHTTP(loginW, loginReq)
+
+	sessionCookie := loginW.Result().Cookies()[0]
+
+	// List directory
+	listReq := httptest.NewRequest("GET", "/api/list?path=/", nil)
+	listReq.AddCookie(sessionCookie)
+	listW := httptest.NewRecorder()
+	mux.ServeHTTP(listW, listReq)
+
+	if listW.Code != http.StatusOK {
+		t.Fatalf("Expected status 200, got %d", listW.Code)
+	}
+
+	var resp DirResponse
+	json.NewDecoder(listW.Body).Decode(&resp)
+
+	if resp.Type != "dir" {
+		t.Fatalf("Expected type 'dir', got %s", resp.Type)
+	}
+
+	if resp.Contents == nil {
+		t.Fatalf("Expected contents array")
+	}
+}
+
+// TestDirectoryListingUnauthorized tests that unauthenticated requests are rejected
+func TestDirectoryListingUnauthorized(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/list", handleListDir)
+
+	req := httptest.NewRequest("GET", "/api/list?path=/", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("Expected status 401, got %d", w.Code)
+	}
+}
+
+// TestFilesPageRequiresAuth tests that /files requires authentication
+func TestFilesPageRequiresAuth(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/files", handlePages)
+	mux.HandleFunc("/files/", handlePages)
+
+	req := httptest.NewRequest("GET", "/files", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusMovedPermanently && w.Code != http.StatusSeeOther {
+		t.Fatalf("Expected redirect (301 or 303), got %d", w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	if location != "/login" {
+		t.Fatalf("Expected redirect to /login, got %s", location)
+	}
+}
+
+// TestNestedFilesPath tests that nested paths like /files/Documents work
+func TestNestedFilesPath(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/login", handleLogin)
+	mux.HandleFunc("/files/", handlePages)
+
+	// Login first
+	loginBody := LoginRequest{
+		Username: "admin",
+		Password: "admin123",
+	}
+	bodyBytes, _ := json.Marshal(loginBody)
+	loginReq := httptest.NewRequest("POST", "/api/login", bytes.NewReader(bodyBytes))
+	loginReq.Header.Set("Content-Type", "application/json")
+	loginW := httptest.NewRecorder()
+	mux.ServeHTTP(loginW, loginReq)
+
+	sessionCookie := loginW.Result().Cookies()[0]
+
+	// Access nested path
+	req := httptest.NewRequest("GET", "/files/Documents/Projects", nil)
+	req.AddCookie(sessionCookie)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Expected status 200 for nested path, got %d", w.Code)
+	}
+}

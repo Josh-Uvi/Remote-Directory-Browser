@@ -56,6 +56,15 @@ go build -o teleport-browser
 - [x] Directory contents display
 - [x] Clear error messages for failed login attempts
 
+### Second User Story: Navigate Directory Structure ✓
+
+- [x] Click on subdirectory row to navigate into it
+- [x] Breadcrumb navigation shows current path (e.g., "Home > Documents > Projects")
+- [x] URL updates to reflect current directory (e.g., `/files/Documents/Projects`)
+- [x] Breadcrumb links are clickable to navigate to parent directories
+- [x] Page refresh preserves state via URL
+- [x] Directory table reloads with new contents on navigation
+
 ### Security Features
 
 - **TLS Encryption**: All traffic over HTTPS with minimum TLS 1.2
@@ -103,6 +112,10 @@ Tests include:
 - Logout functionality
 - Security headers presence
 - HTTP method validation
+- Directory listing with authentication
+- Unauthenticated directory access rejection
+- Files page authentication requirement
+- Nested directory path handling
 
 ### Format Code
 
@@ -259,6 +272,11 @@ For production use:
 - [x] HTTPS enforcement
 - [x] Secure cookie flags set
 - [x] Path traversal attempts blocked
+- [x] Directory navigation works
+- [x] Breadcrumb navigation functional
+- [x] URL updates on directory change
+- [x] Page refresh preserves directory state
+- [x] Nested paths accessible (e.g., /files/Documents/Projects)
 
 ## Future Enhancements
 

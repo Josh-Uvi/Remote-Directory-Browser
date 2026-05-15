@@ -507,6 +507,7 @@ func main() {
 	mux.HandleFunc("/api/list", handleListDir)
 	mux.HandleFunc("/login", handlePages)
 	mux.HandleFunc("/files", handlePages)
+	mux.HandleFunc("/files/", handlePages)
 	mux.HandleFunc("/static/", handleStatic)
 
 	// TLS setup
