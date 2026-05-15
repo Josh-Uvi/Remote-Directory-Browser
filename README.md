@@ -2,7 +2,7 @@
 
 A secure web application for browsing remote directory contents with strong authentication, TLS encryption, and client-side filtering/sorting.
 
-**Status:** ✅ All 4 user stories complete! See [COMPLETE_IMPLEMENTATION.md](COMPLETE_IMPLEMENTATION.md) for details.
+> This is a POC/demonstration project.
 
 ## Quick Start
 
@@ -102,20 +102,18 @@ go build -o teleport-browser
 ## Project Structure
 
 ```
-.
-├── main.go              # Backend implementation
-├── main_test.go         # Unit tests
-├── go.mod               # Go module definition
-├── Makefile             # Build automation
-├── static/
-│   ├── login.html       # Login page
-│   ├── files.html       # Directory browser page
-│   ├── styles.css       # Shared styling
-│   └── app.js           # Client-side utilities
-├── design.md            # Design document (RFD format)
-├── requirement.md       # Original requirements
-├── guide.md             # Evaluation guide
-└── README.md            # This file
+Teleport-fullstack/
+├── 📄 main.go                    ← Backend (Go)
+├── 📄 main_test.go               ← Unit tests
+├── 📁 static/                    ← Frontend
+│   ├── login.html                ← Login page
+│   ├── files.html                ← Directory browser
+│   ├── styles.css                ← Styling
+│   └── app.js                    ← Client utilities
+├── 📄 Makefile                   ← Build automation
+├── 📄 go.mod                     ← Dependency management
+├── 🔐 server.crt & server.key    ← TLS certificates
+└── 📖 README.md                  ← Full documentation
 ```
 
 ## Build and Testing
@@ -318,12 +316,9 @@ For production use:
 
 ## Future Enhancements
 
-All 4 user stories from the design document are now complete! See [COMPLETE_IMPLEMENTATION.md](COMPLETE_IMPLEMENTATION.md) for full details.
+All 4 user stories from the design document are now complete!
 
-For future phases, see [design.md](docs/design.md):
+For future phases:
 - Phase 3: Security hardening (rate limiting, audit logging)
 - Phase 4: Testing & polish (E2E tests, performance optimization)
 
-## License
-
-This is a POC/demonstration project.
