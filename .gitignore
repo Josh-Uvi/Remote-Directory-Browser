@@ -2,7 +2,7 @@
 *.dll
 *.so
 *.dylib
-teleport-browser
+remote-browser
 server.crt
 server.key
 coverage.out

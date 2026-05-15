@@ -4,6 +4,23 @@ A secure web application for browsing remote directory contents with strong auth
 
 > This is a POC/demonstration project.
 
+## Project Structure
+
+```
+Remote-directory-browser/
+├── 📄 main.go                    ← Backend (Go)
+├── 📄 main_test.go               ← Unit tests
+├── 📁 static/                    ← Frontend
+│   ├── login.html                ← Login page
+│   ├── files.html                ← Directory browser
+│   ├── styles.css                ← Styling
+│   └── app.js                    ← Client utilities
+├── 📄 Makefile                   ← Build automation
+├── 📄 go.mod                     ← Dependency management
+├── 🔐 server.crt & server.key    ← TLS certificates
+└── 📖 README.md                  ← Full documentation
+```
+
 ## Quick Start
 
 ### Prerequisites
@@ -31,10 +48,10 @@ Or manually:
 go run gencert.go
 
 # Build
-go build -o teleport-browser
+go build -o remote-browser
 
 # Run
-./teleport-browser
+./remote-browser
 ```
 
 ### Access the Application
@@ -98,23 +115,6 @@ go build -o teleport-browser
 - **Path Traversal Protection**: Validated path operations
 - **Security Headers**: HSTS, X-Frame-Options, CSP, X-XSS-Protection
 - **Error Handling**: Generic error messages to prevent information disclosure
-
-## Project Structure
-
-```
-Teleport-fullstack/
-├── 📄 main.go                    ← Backend (Go)
-├── 📄 main_test.go               ← Unit tests
-├── 📁 static/                    ← Frontend
-│   ├── login.html                ← Login page
-│   ├── files.html                ← Directory browser
-│   ├── styles.css                ← Styling
-│   └── app.js                    ← Client utilities
-├── 📄 Makefile                   ← Build automation
-├── 📄 go.mod                     ← Dependency management
-├── 🔐 server.crt & server.key    ← TLS certificates
-└── 📖 README.md                  ← Full documentation
-```
 
 ## Build and Testing
 

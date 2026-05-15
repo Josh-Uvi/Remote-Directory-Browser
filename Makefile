@@ -19,7 +19,7 @@ certs:
 # Build the application
 build: go.mod
 	@echo "Building application..."
-	@go build -o teleport-browser -v
+	@go build -o remote-browser -v
 
 # Run the application
 run: certs build
@@ -28,7 +28,7 @@ run: certs build
 	@echo "  admin / admin123"
 	@echo "  user / password"
 	@echo "Navigate to: https://localhost:8443 (ignore self-signed cert warning)"
-	@./teleport-browser
+	@./remote-browser
 
 # Run tests
 test:
@@ -49,7 +49,7 @@ lint:
 # Clean
 clean:
 	@echo "Cleaning..."
-	@rm -f teleport-browser server.crt server.key coverage.out cert.conf
+	@rm -f remote-browser server.crt server.key coverage.out cert.conf
 	@go clean
 
 # Development: run with hot reload (requires air or similar)
